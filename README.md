@@ -84,14 +84,11 @@ Open [http://localhost:3000](http://localhost:3000) to start creating courses.
 
 ## Environment Variables
 
+Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
+
+
 ```env
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
-Get your API key from [Google AI Studio](https://aistudio.google.com/apikey).
-
 ---
-
-<p align="center">
-  Built for the <strong>Gemini API Hackathon 2025</strong>
-</p>
