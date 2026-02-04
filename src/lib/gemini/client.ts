@@ -17,22 +17,22 @@ export const gemini = {
   },
 };
 
-// Model configurations
+// Model configurations - using stable model names
 export const MODELS = {
   // Director - orchestration and complex reasoning
-  DIRECTOR: 'gemini-2.5-pro-preview-05-06',
+  DIRECTOR: 'gemini-2.0-flash',
 
   // Content Alchemist - complex content transformation
-  CONTENT_ALCHEMIST: 'gemini-2.5-pro-preview-05-06',
+  CONTENT_ALCHEMIST: 'gemini-2.0-flash',
 
   // Visual Stylist - multimodal brand analysis
-  VISUAL_STYLIST: 'gemini-2.5-pro-preview-05-06',
+  VISUAL_STYLIST: 'gemini-2.0-flash',
 
   // Fast sub-agents
-  CURRICULUM_ARCHITECT: 'gemini-2.5-flash-preview-04-17',
-  ASSESSMENT_WIZARD: 'gemini-2.5-flash-preview-04-17',
-  ENGAGEMENT_ENGINEER: 'gemini-2.5-flash-preview-04-17',
-  SCRIPT_WRITER: 'gemini-2.5-flash-preview-04-17',
+  CURRICULUM_ARCHITECT: 'gemini-2.0-flash',
+  ASSESSMENT_WIZARD: 'gemini-2.0-flash',
+  ENGAGEMENT_ENGINEER: 'gemini-2.0-flash',
+  SCRIPT_WRITER: 'gemini-2.0-flash',
 
   // Real-time voice input
   VOICE_INPUT: 'gemini-2.0-flash',

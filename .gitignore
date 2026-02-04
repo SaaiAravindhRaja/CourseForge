@@ -44,3 +44,4 @@ next-env.d.ts
 # AI/Claude docs
 Claude.md
 CLAUDE.md
+.env.local

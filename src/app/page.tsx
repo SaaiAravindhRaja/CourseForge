@@ -196,29 +196,36 @@ export default function Home() {
     setUploadProgress(0);
 
     try {
-      // Simulate progress
+      // Progress animation
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + 10, 90));
-      }, 100);
+        setUploadProgress((prev) => Math.min(prev + 5, 85));
+      }, 150);
 
-      let content = '';
+      // Upload file to API for processing
+      const formData = new FormData();
+      formData.append('file', file);
 
-      if (file.type === 'application/pdf') {
-        content = `[PDF Content from ${file.name}]\n\nThis PDF would be processed by Gemini's document understanding capabilities.`;
-      } else {
-        content = await file.text();
-      }
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
 
       clearInterval(progressInterval);
-      setUploadProgress(100);
 
-      await new Promise((r) => setTimeout(r, 300));
+      if (!data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setUploadProgress(100);
+      await new Promise((r) => setTimeout(r, 200));
 
       setSourceDocument({
         id: crypto.randomUUID(),
-        name: file.name,
-        type: file.type.includes('pdf') ? 'pdf' : 'text',
-        content,
+        name: data.document.name,
+        type: data.document.type,
+        content: data.document.content,
         uploadedAt: new Date().toISOString(),
       });
 
@@ -227,6 +234,7 @@ export default function Home() {
       setProgress(10);
     } catch (error) {
       console.error('Error processing file:', error);
+      alert('Failed to process file. Please try a different file or use the demo.');
     } finally {
       setIsProcessing(false);
       setUploadProgress(0);
