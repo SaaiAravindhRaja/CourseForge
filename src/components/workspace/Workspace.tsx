@@ -54,51 +54,36 @@ function AgentStatus({ agentId, isActive }: { agentId: AgentId; isActive: boolea
   const Icon = agent.icon;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
-      className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-300 ${
+    <div
+      className={`flex items-center gap-2.5 py-1.5 px-2 rounded-lg transition-all duration-200 ${
         isActive ? 'bg-[--paper-100]' : ''
       }`}
     >
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <div
-          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
-            isActive ? 'scale-110' : ''
-          }`}
+          className={`w-7 h-7 rounded-md flex items-center justify-center transition-all duration-200`}
           style={{
             backgroundColor: `${agent.color}${isActive ? '20' : '10'}`,
           }}
         >
           <Icon
-            className="w-4.5 h-4.5"
+            className="w-3.5 h-3.5"
             style={{ color: agent.color }}
           />
         </div>
         {isActive && (
           <motion.div
-            className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+            className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
             style={{ backgroundColor: agent.color }}
-            animate={{ scale: [1, 1.2, 1] }}
+            animate={{ scale: [1, 1.3, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
         )}
       </div>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${isActive ? 'text-[--paper-900]' : 'text-[--paper-600]'}`}>
-          {agent.name}
-        </p>
-        {isActive && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            className="text-xs text-[--paper-500]"
-          >
-            {agent.description}...
-          </motion.p>
-        )}
-      </div>
-    </motion.div>
+      <span className={`text-sm ${isActive ? 'text-[--paper-900] font-medium' : 'text-[--paper-600]'}`}>
+        {agent.name}
+      </span>
+    </div>
   );
 }
 
@@ -228,11 +213,11 @@ function ModuleCard({
 
       <button
         onClick={onToggle}
-        className="w-full module-card-header flex items-start gap-4 text-left"
+        className="w-full module-card-header flex items-start gap-3 text-left"
       >
         {/* Module number */}
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-semibold"
+          className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-semibold"
           style={{
             backgroundColor: `${accentColor}10`,
             color: accentColor,
@@ -241,23 +226,23 @@ function ModuleCard({
           {index + 1}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 mb-1">
-            <p className="font-medium text-[--paper-900] truncate">{module.title}</p>
+            <p className="font-medium text-[--paper-900] text-sm truncate flex-1">{module.title}</p>
             {hasContent && (
-              <span className="badge-forge badge-forge-success text-[10px] py-0.5 px-2">
-                Complete
+              <span className="flex-shrink-0 text-[10px] py-0.5 px-1.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Done
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-[--paper-500]">
+          <div className="flex items-center gap-2 text-xs text-[--paper-500]">
             <span className="flex items-center gap-1">
-              <BookOpen className="w-3.5 h-3.5" />
+              <BookOpen className="w-3 h-3 flex-shrink-0" />
               {totalLessons} lessons
             </span>
             {module.quiz && (
               <span className="flex items-center gap-1">
-                <ClipboardCheck className="w-3.5 h-3.5" />
+                <ClipboardCheck className="w-3 h-3 flex-shrink-0" />
                 Quiz
               </span>
             )}
@@ -268,9 +253,9 @@ function ModuleCard({
         <motion.div
           animate={{ rotate: isExpanded ? 90 : 0 }}
           transition={{ duration: 0.2 }}
-          className="text-[--paper-400]"
+          className="text-[--paper-400] flex-shrink-0"
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-4 h-4" />
         </motion.div>
       </button>
 
@@ -614,27 +599,27 @@ export function Workspace({ onReset }: WorkspaceProps) {
   };
 
   return (
-    <div className="h-screen flex bg-[--paper-50]">
+    <div className="h-screen flex bg-[--paper-50] overflow-hidden">
       {/* Left Sidebar - Agents & Document */}
-      <aside className="w-72 border-r border-[--paper-200] bg-white flex flex-col">
+      <aside className="w-64 flex-shrink-0 border-r border-[--paper-200] bg-white flex flex-col">
         {/* Logo */}
-        <div className="h-16 border-b border-[--paper-200] px-5 flex items-center">
+        <div className="h-14 border-b border-[--paper-200] px-4 flex items-center">
           <Image
             src="/logo.png"
             alt="CourseForge"
-            width={130}
+            width={120}
             height={28}
-            className="h-7 w-auto"
+            className="h-6 w-auto"
             priority
           />
         </div>
 
         {/* Document info */}
         {sourceDocument && (
-          <div className="p-5 border-b border-[--paper-200]">
+          <div className="p-4 border-b border-[--paper-200]">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-[--ember-50] border border-[--ember-200] flex items-center justify-center flex-shrink-0">
-                <FileText className="h-5 w-5 text-[--ember-600]" />
+              <div className="w-10 h-10 rounded-lg bg-[--ember-50] border border-[--ember-200] flex items-center justify-center flex-shrink-0">
+                <FileText className="h-4 w-4 text-[--ember-600]" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-[--paper-900] truncate">{sourceDocument.name}</p>
@@ -645,10 +630,10 @@ export function Workspace({ onReset }: WorkspaceProps) {
         )}
 
         {/* Progress */}
-        <div className="p-5 border-b border-[--paper-200]">
-          <div className="flex items-center justify-between mb-3">
+        <div className="p-4 border-b border-[--paper-200]">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-[--paper-500] uppercase tracking-wide">Progress</span>
-            <ProgressRing progress={progress} size={40} />
+            <ProgressRing progress={progress} size={36} />
           </div>
           <div className="h-1.5 bg-[--paper-100] rounded-full overflow-hidden">
             <motion.div
@@ -661,8 +646,8 @@ export function Workspace({ onReset }: WorkspaceProps) {
         </div>
 
         {/* Agent status */}
-        <div className="flex-1 overflow-auto p-4">
-          <p className="text-xs font-medium text-[--paper-500] uppercase tracking-wide mb-3 px-1">AI Agents</p>
+        <div className="flex-1 overflow-auto p-3">
+          <p className="text-[10px] font-medium text-[--paper-500] uppercase tracking-wide mb-2 px-1">AI Agents</p>
           <div className="space-y-1">
             {(Object.keys(AGENTS) as AgentId[]).map((id) => (
               <AgentStatus key={id} agentId={id} isActive={activeAgent === id} />
@@ -815,48 +800,48 @@ export function Workspace({ onReset }: WorkspaceProps) {
       </main>
 
       {/* Right Panel - Course Outline */}
-      <aside className="w-[400px] border-l border-[--paper-200] bg-white flex flex-col">
-        <div className="h-16 border-b border-[--paper-200] px-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-[--paper-500]" />
-            <h2 className="font-serif font-medium text-[--paper-900]">Course Outline</h2>
+      <aside className="w-80 flex-shrink-0 border-l border-[--paper-200] bg-white flex flex-col">
+        <div className="h-14 border-b border-[--paper-200] px-4 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <BookOpen className="w-4 h-4 text-[--paper-500] flex-shrink-0" />
+            <h2 className="font-medium text-[--paper-900] text-sm">Outline</h2>
           </div>
           {course && course.modules.length > 0 && (
-            <span className="badge-forge badge-forge-neutral">
+            <span className="flex-shrink-0 text-[10px] py-0.5 px-2 rounded-full bg-[--paper-100] text-[--paper-600]">
               {course.modules.length} modules
             </span>
           )}
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-5">
+          <div className="p-4">
             {!course || course.modules.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
+                className="text-center py-12"
               >
-                <div className="w-16 h-16 rounded-2xl bg-[--paper-100] mx-auto mb-5 flex items-center justify-center">
-                  <BookOpen className="h-8 w-8 text-[--paper-400]" />
+                <div className="w-14 h-14 rounded-xl bg-[--paper-100] mx-auto mb-4 flex items-center justify-center">
+                  <BookOpen className="h-7 w-7 text-[--paper-400]" />
                 </div>
-                <h3 className="font-medium text-[--paper-900] mb-2">No course yet</h3>
-                <p className="text-sm text-[--paper-500] max-w-xs mx-auto">
-                  Start chatting with the agents to create your course structure
+                <h3 className="font-medium text-[--paper-900] mb-1 text-sm">No course yet</h3>
+                <p className="text-xs text-[--paper-500]">
+                  Chat with agents to create your course
                 </p>
               </motion.div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Course header */}
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-6"
+                  className="mb-4 pb-3 border-b border-[--paper-100]"
                 >
-                  <h3 className="font-serif text-lg font-medium text-[--paper-900] mb-1">
+                  <h3 className="font-serif text-base font-medium text-[--paper-900] mb-1 leading-tight">
                     {course.title}
                   </h3>
                   {course.description && (
-                    <p className="text-sm text-[--paper-500] line-clamp-2">{course.description}</p>
+                    <p className="text-xs text-[--paper-500] line-clamp-2 leading-relaxed">{course.description}</p>
                   )}
                 </motion.div>
 
