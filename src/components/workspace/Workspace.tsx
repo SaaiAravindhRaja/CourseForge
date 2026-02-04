@@ -11,10 +11,19 @@ import {
   Circle,
   Download,
   RotateCcw,
-  Mic,
-  MicOff,
   Loader2,
-  X,
+  Sparkles,
+  Brain,
+  PenTool,
+  ClipboardCheck,
+  Lightbulb,
+  Video,
+  Compass,
+  BookOpen,
+  MessageSquare,
+  GraduationCap,
+  FileJson,
+  FileCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,27 +32,351 @@ import { useCourseStore } from '@/store/courseStore';
 import type { AgentMessage, Module, Lesson } from '@/types';
 import Image from 'next/image';
 
-// Agent configuration with colors
-const AGENTS: Record<string, { name: string; color: string }> = {
-  director: { name: 'Director', color: '#EA580C' },
-  curriculum: { name: 'Architect', color: '#2563EB' },
-  content: { name: 'Writer', color: '#16A34A' },
-  assessment: { name: 'Assessor', color: '#CA8A04' },
-  engagement: { name: 'Engager', color: '#9333EA' },
-  script: { name: 'Producer', color: '#DC2626' },
+// Agent configuration with enhanced visuals
+const AGENTS = {
+  director: { name: 'Director', color: '#E24A12', icon: Compass, description: 'Orchestrating' },
+  curriculum: { name: 'Architect', color: '#0066FF', icon: Brain, description: 'Structuring' },
+  content: { name: 'Writer', color: '#00A67E', icon: PenTool, description: 'Writing' },
+  assessment: { name: 'Assessor', color: '#F59E0B', icon: ClipboardCheck, description: 'Assessing' },
+  engagement: { name: 'Engager', color: '#8B5CF6', icon: Lightbulb, description: 'Engaging' },
+  script: { name: 'Producer', color: '#EC4899', icon: Video, description: 'Producing' },
 };
+
+type AgentId = keyof typeof AGENTS;
 
 interface WorkspaceProps {
   onReset: () => void;
+}
+
+// Agent status display component
+function AgentStatus({ agentId, isActive }: { agentId: AgentId; isActive: boolean }) {
+  const agent = AGENTS[agentId];
+  const Icon = agent.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-all duration-300 ${
+        isActive ? 'bg-[--paper-100]' : ''
+      }`}
+    >
+      <div className="relative">
+        <div
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-300 ${
+            isActive ? 'scale-110' : ''
+          }`}
+          style={{
+            backgroundColor: `${agent.color}${isActive ? '20' : '10'}`,
+          }}
+        >
+          <Icon
+            className="w-4.5 h-4.5"
+            style={{ color: agent.color }}
+          />
+        </div>
+        {isActive && (
+          <motion.div
+            className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
+            style={{ backgroundColor: agent.color }}
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-medium ${isActive ? 'text-[--paper-900]' : 'text-[--paper-600]'}`}>
+          {agent.name}
+        </p>
+        {isActive && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="text-xs text-[--paper-500]"
+          >
+            {agent.description}...
+          </motion.p>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Progress ring component
+function ProgressRing({ progress, size = 48 }: { progress: number; size?: number }) {
+  const strokeWidth = 3;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg className="progress-ring" width={size} height={size}>
+        <circle
+          className="text-[--paper-200]"
+          strokeWidth={strokeWidth}
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+        />
+        <circle
+          className="progress-ring-circle text-[--ember-500]"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx={size / 2}
+          cy={size / 2}
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset: offset,
+          }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xs font-semibold text-[--paper-700]">{progress}%</span>
+      </div>
+    </div>
+  );
+}
+
+// Message component with enhanced styling
+function Message({ message }: { message: AgentMessage }) {
+  const isUser = message.role === 'user';
+
+  if (isUser) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex justify-end"
+      >
+        <div className="message-user max-w-[85%]">
+          <p className="text-[15px] leading-relaxed">{message.content}</p>
+        </div>
+      </motion.div>
+    );
+  }
+
+  const agentId = (message.agentRole || 'director') as AgentId;
+  const agent = AGENTS[agentId];
+  const Icon = agent.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex gap-4"
+    >
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+        style={{ backgroundColor: `${agent.color}15` }}
+      >
+        <Icon className="w-5 h-5" style={{ color: agent.color }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-sm font-medium text-[--paper-900]">{agent.name}</span>
+          <span className="text-xs text-[--paper-400]">Agent</span>
+        </div>
+        <div className="message-assistant">
+          <p className="text-[15px] text-[--paper-700] whitespace-pre-wrap leading-relaxed">
+            {message.content}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Module card with enhanced visuals
+function ModuleCard({
+  module,
+  index,
+  isExpanded,
+  onToggle,
+}: {
+  module: Module;
+  index: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const hasContent = module.lessons.some((l) => l.content);
+  const completedLessons = module.lessons.filter((l) => l.content).length;
+  const totalLessons = module.lessons.length;
+  const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  const moduleColors = [
+    '#E24A12', '#0066FF', '#00A67E', '#F59E0B', '#8B5CF6', '#EC4899'
+  ];
+  const accentColor = moduleColors[index % moduleColors.length];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="module-card overflow-hidden"
+    >
+      {/* Accent bar */}
+      <div className="h-1" style={{ backgroundColor: accentColor }} />
+
+      <button
+        onClick={onToggle}
+        className="w-full module-card-header flex items-start gap-4 text-left"
+      >
+        {/* Module number */}
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-semibold"
+          style={{
+            backgroundColor: `${accentColor}10`,
+            color: accentColor,
+          }}
+        >
+          {index + 1}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-medium text-[--paper-900] truncate">{module.title}</p>
+            {hasContent && (
+              <span className="badge-forge badge-forge-success text-[10px] py-0.5 px-2">
+                Complete
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 text-xs text-[--paper-500]">
+            <span className="flex items-center gap-1">
+              <BookOpen className="w-3.5 h-3.5" />
+              {totalLessons} lessons
+            </span>
+            {module.quiz && (
+              <span className="flex items-center gap-1">
+                <ClipboardCheck className="w-3.5 h-3.5" />
+                Quiz
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Expand icon */}
+        <motion.div
+          animate={{ rotate: isExpanded ? 90 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="text-[--paper-400]"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </motion.div>
+      </button>
+
+      {/* Expanded content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="module-card-content border-t border-[--paper-100]">
+              {/* Lessons list */}
+              <div className="space-y-1">
+                {module.lessons.map((lesson, lessonIndex) => (
+                  <motion.div
+                    key={lesson.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: lessonIndex * 0.03 }}
+                    className="lesson-item group"
+                  >
+                    <div className="flex items-center justify-center w-6 h-6">
+                      {lesson.content ? (
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <Check className="w-3 h-3 text-emerald-600" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded-full border-2 border-[--paper-300]" />
+                      )}
+                    </div>
+                    <span className="text-sm text-[--paper-600] group-hover:text-[--paper-900] truncate flex-1">
+                      {lesson.title}
+                    </span>
+                    {lesson.videoScript && (
+                      <Video className="w-4 h-4 text-[--paper-400]" />
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Quiz indicator */}
+              {module.quiz && (
+                <div className="mt-3 pt-3 border-t border-[--paper-100]">
+                  <div className="flex items-center gap-2 text-sm text-[--paper-600]">
+                    <GraduationCap className="w-4 h-4" />
+                    <span>{module.quiz.questions?.length || 0} quiz questions</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// Export menu component
+function ExportMenu({ onExport, isOpen, onClose }: { onExport: (format: 'json' | 'markdown') => void; isOpen: boolean; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl border border-[--paper-200] shadow-lg overflow-hidden z-50"
+          >
+            <button
+              onClick={() => { onExport('json'); onClose(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[--paper-700] hover:bg-[--paper-50] transition-colors"
+            >
+              <FileJson className="w-4 h-4 text-[--paper-500]" />
+              Export as JSON
+            </button>
+            <button
+              onClick={() => { onExport('markdown'); onClose(); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[--paper-700] hover:bg-[--paper-50] transition-colors border-t border-[--paper-100]"
+            >
+              <FileCode className="w-4 h-4 text-[--paper-500]" />
+              Export as Markdown
+            </button>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
 }
 
 export function Workspace({ onReset }: WorkspaceProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [activeAgent, setActiveAgent] = useState<string | null>(null);
+  const [activeAgent, setActiveAgent] = useState<AgentId | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
-  const [isRecording, setIsRecording] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -54,6 +387,7 @@ export function Workspace({ onReset }: WorkspaceProps) {
     sourceDocument,
     course,
     stage,
+    progress,
     setStage,
     setProgress,
     setCourse,
@@ -73,6 +407,13 @@ export function Workspace({ onReset }: WorkspaceProps) {
       sendInitialGreeting();
     }
   }, [sourceDocument]);
+
+  // Auto-expand first module
+  useEffect(() => {
+    if (course && course.modules.length > 0 && expandedModules.size === 0) {
+      setExpandedModules(new Set([course.modules[0].id]));
+    }
+  }, [course]);
 
   const sendInitialGreeting = async () => {
     setIsLoading(true);
@@ -134,7 +475,7 @@ export function Workspace({ onReset }: WorkspaceProps) {
     for (let i = 0; i < words.length; i++) {
       current += (i > 0 ? ' ' : '') + words[i];
       setStreamingText(current);
-      await new Promise((r) => setTimeout(r, 15 + Math.random() * 20));
+      await new Promise((r) => setTimeout(r, 12 + Math.random() * 15));
     }
   };
 
@@ -219,24 +560,65 @@ export function Workspace({ onReset }: WorkspaceProps) {
     });
   };
 
-  const handleExport = () => {
+  const handleExport = (format: 'json' | 'markdown') => {
     if (!course) return;
-    const content = JSON.stringify(course, null, 2);
-    const blob = new Blob([content], { type: 'application/json' });
+
+    let content: string;
+    let filename: string;
+    let mimeType: string;
+
+    if (format === 'json') {
+      content = JSON.stringify(course, null, 2);
+      filename = `${course.title.toLowerCase().replace(/\s+/g, '-')}.json`;
+      mimeType = 'application/json';
+    } else {
+      // Generate markdown
+      let md = `# ${course.title}\n\n`;
+      if (course.description) md += `${course.description}\n\n`;
+      md += `---\n\n`;
+
+      course.modules.forEach((module, i) => {
+        md += `## Module ${i + 1}: ${module.title}\n\n`;
+        if (module.description) md += `${module.description}\n\n`;
+
+        module.lessons.forEach((lesson, j) => {
+          md += `### Lesson ${i + 1}.${j + 1}: ${lesson.title}\n\n`;
+          if (lesson.content) md += `${lesson.content}\n\n`;
+        });
+
+        if (module.quiz) {
+          md += `### Quiz\n\n`;
+          module.quiz.questions?.forEach((q, k) => {
+            md += `**${k + 1}. ${q.question}**\n\n`;
+            q.options?.forEach((opt, l) => {
+              md += `${l === q.correctAnswer ? '✓' : '○'} ${opt}\n`;
+            });
+            md += `\n`;
+          });
+        }
+        md += `---\n\n`;
+      });
+
+      content = md;
+      filename = `${course.title.toLowerCase().replace(/\s+/g, '-')}.md`;
+      mimeType = 'text/markdown';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${course.title.toLowerCase().replace(/\s+/g, '-')}.json`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="h-screen flex bg-[#FAFAF9]">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-stone-200 bg-white flex flex-col">
+    <div className="h-screen flex bg-[--paper-50]">
+      {/* Left Sidebar - Agents & Document */}
+      <aside className="w-72 border-r border-[--paper-200] bg-white flex flex-col">
         {/* Logo */}
-        <div className="h-16 border-b border-stone-200 px-5 flex items-center">
+        <div className="h-16 border-b border-[--paper-200] px-5 flex items-center">
           <Image
             src="/logo.png"
             alt="CourseForge"
@@ -249,59 +631,70 @@ export function Workspace({ onReset }: WorkspaceProps) {
 
         {/* Document info */}
         {sourceDocument && (
-          <div className="p-4 border-b border-stone-200">
-            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Document</p>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded bg-stone-100 flex items-center justify-center flex-shrink-0">
-                <FileText className="h-4 w-4 text-stone-500" />
+          <div className="p-5 border-b border-[--paper-200]">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-[--ember-50] border border-[--ember-200] flex items-center justify-center flex-shrink-0">
+                <FileText className="h-5 w-5 text-[--ember-600]" />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-stone-900 truncate">{sourceDocument.name}</p>
-                <p className="text-xs text-stone-500">{Math.round(sourceDocument.content.length / 1000)}k chars</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-[--paper-900] truncate">{sourceDocument.name}</p>
+                <p className="text-xs text-[--paper-500]">{Math.round(sourceDocument.content.length / 1000)}k characters</p>
               </div>
             </div>
           </div>
         )}
 
+        {/* Progress */}
+        <div className="p-5 border-b border-[--paper-200]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-medium text-[--paper-500] uppercase tracking-wide">Progress</span>
+            <ProgressRing progress={progress} size={40} />
+          </div>
+          <div className="h-1.5 bg-[--paper-100] rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-[--ember-400] to-[--ember-600] rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+        </div>
+
         {/* Agent status */}
-        <div className="p-4 flex-1">
-          <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-3">Agents</p>
-          <div className="space-y-2">
-            {Object.entries(AGENTS).map(([id, agent]) => (
-              <div key={id} className="flex items-center gap-3 py-1.5">
-                <div
-                  className={`w-2 h-2 rounded-full ${activeAgent === id ? 'agent-dot-active' : ''}`}
-                  style={{ backgroundColor: agent.color }}
-                />
-                <span className={`text-sm ${activeAgent === id ? 'text-stone-900 font-medium' : 'text-stone-500'}`}>
-                  {agent.name}
-                </span>
-                {activeAgent === id && (
-                  <span className="text-xs text-orange-600 ml-auto">working</span>
-                )}
-              </div>
+        <div className="flex-1 overflow-auto p-4">
+          <p className="text-xs font-medium text-[--paper-500] uppercase tracking-wide mb-3 px-1">AI Agents</p>
+          <div className="space-y-1">
+            {(Object.keys(AGENTS) as AgentId[]).map((id) => (
+              <AgentStatus key={id} agentId={id} isActive={activeAgent === id} />
             ))}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t border-stone-200 space-y-2">
+        <div className="p-4 border-t border-[--paper-200] space-y-2">
           {course && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="w-full justify-start border-stone-200 text-stone-600 hover:text-stone-900"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export Course
-            </Button>
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="w-full justify-start border-[--paper-200] text-[--paper-700] hover:bg-[--paper-50] hover:border-[--paper-300]"
+              >
+                <Download className="h-4 w-4 mr-2 text-[--paper-500]" />
+                Export Course
+              </Button>
+              <ExportMenu
+                isOpen={showExportMenu}
+                onClose={() => setShowExportMenu(false)}
+                onExport={handleExport}
+              />
+            </div>
           )}
           <Button
             variant="ghost"
             size="sm"
             onClick={onReset}
-            className="w-full justify-start text-stone-500 hover:text-stone-900"
+            className="w-full justify-start text-[--paper-500] hover:text-[--paper-900] hover:bg-[--paper-100]"
           >
             <RotateCcw className="h-4 w-4 mr-2" />
             Start Over
@@ -309,13 +702,12 @@ export function Workspace({ onReset }: WorkspaceProps) {
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main Chat Area */}
       <main className="flex-1 flex flex-col min-w-0">
-        {/* Chat area */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1">
+        {/* Chat messages */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
             <div className="max-w-3xl mx-auto px-6 py-8">
-              {/* Messages */}
               <div className="space-y-6">
                 {messages.map((message, index) => (
                   <Message key={message.id || index} message={message} />
@@ -324,18 +716,32 @@ export function Workspace({ onReset }: WorkspaceProps) {
                 {/* Streaming text */}
                 {streamingText && (
                   <motion.div
-                    initial={{ opacity: 0, y: 4 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex gap-4"
                   >
-                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-orange-700">AI</span>
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                      style={{ backgroundColor: `${AGENTS[activeAgent || 'director'].color}15` }}
+                    >
+                      {(() => {
+                        const Icon = AGENTS[activeAgent || 'director'].icon;
+                        return <Icon className="w-5 h-5" style={{ color: AGENTS[activeAgent || 'director'].color }} />;
+                      })()}
                     </div>
-                    <div className="flex-1 message-assistant">
-                      <p className="text-sm text-stone-700 whitespace-pre-wrap">
-                        {streamingText}
-                        <span className="inline-block w-0.5 h-4 bg-orange-500 ml-0.5 animate-pulse" />
-                      </p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-sm font-medium text-[--paper-900]">
+                          {AGENTS[activeAgent || 'director'].name}
+                        </span>
+                        <Sparkles className="w-3.5 h-3.5 text-[--ember-500] animate-pulse" />
+                      </div>
+                      <div className="message-assistant">
+                        <p className="text-[15px] text-[--paper-700] whitespace-pre-wrap leading-relaxed">
+                          {streamingText}
+                          <span className="typing-cursor" />
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -345,15 +751,24 @@ export function Workspace({ onReset }: WorkspaceProps) {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="flex items-center gap-2 text-stone-500"
+                    className="flex items-center gap-3 px-4 py-3 bg-[--paper-100] rounded-xl w-fit"
                   >
-                    <span className="flex gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </span>
-                    <span className="text-sm">
-                      {activeAgent ? `${AGENTS[activeAgent]?.name || 'Agent'} is thinking...` : 'Thinking...'}
+                    <div className="flex gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="w-2 h-2 rounded-full bg-[--ember-500]"
+                          animate={{ y: [0, -6, 0] }}
+                          transition={{
+                            duration: 0.6,
+                            repeat: Infinity,
+                            delay: i * 0.1,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-[--paper-600]">
+                      {activeAgent ? `${AGENTS[activeAgent]?.name} is thinking...` : 'Thinking...'}
                     </span>
                   </motion.div>
                 )}
@@ -362,190 +777,106 @@ export function Workspace({ onReset }: WorkspaceProps) {
               </div>
             </div>
           </ScrollArea>
+        </div>
 
-          {/* Input */}
-          <div className="border-t border-stone-200 bg-white p-4">
-            <form onSubmit={handleSubmit} className="max-w-3xl mx-auto flex gap-3">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me to create, modify, or refine your course..."
-                disabled={isLoading || !sourceDocument}
-                className="flex-1 min-h-[48px] max-h-32 resize-none border-stone-200 focus:border-orange-500 focus:ring-orange-500/20"
-                rows={1}
-              />
+        {/* Input area */}
+        <div className="border-t border-[--paper-200] bg-white p-4">
+          <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me to create, modify, or refine your course..."
+                  disabled={isLoading || !sourceDocument}
+                  className="input-forge min-h-[56px] max-h-32 resize-none pr-12"
+                  rows={1}
+                />
+                <div className="absolute right-3 bottom-3 text-xs text-[--paper-400]">
+                  ⏎ to send
+                </div>
+              </div>
               <Button
                 type="submit"
                 disabled={isLoading || !input.trim() || !sourceDocument}
-                className="bg-orange-600 hover:bg-orange-700 text-white h-12 px-4"
+                className="btn-forge btn-forge-primary h-14 w-14 p-0"
               >
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
               </Button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </main>
 
-      {/* Course outline panel */}
-      <aside className="w-96 border-l border-stone-200 bg-white flex flex-col">
-        <div className="h-16 border-b border-stone-200 px-5 flex items-center justify-between">
-          <h2 className="font-serif font-medium text-stone-900">Course Outline</h2>
+      {/* Right Panel - Course Outline */}
+      <aside className="w-[400px] border-l border-[--paper-200] bg-white flex flex-col">
+        <div className="h-16 border-b border-[--paper-200] px-5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-[--paper-500]" />
+            <h2 className="font-serif font-medium text-[--paper-900]">Course Outline</h2>
+          </div>
           {course && course.modules.length > 0 && (
-            <span className="text-xs text-stone-500 bg-stone-100 px-2 py-1 rounded">
+            <span className="badge-forge badge-forge-neutral">
               {course.modules.length} modules
             </span>
           )}
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-4">
+          <div className="p-5">
             {!course || course.modules.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 rounded-lg bg-stone-100 mx-auto mb-4 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-stone-400" />
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-16"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-[--paper-100] mx-auto mb-5 flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-[--paper-400]" />
                 </div>
-                <p className="text-sm text-stone-500">Course outline will appear here</p>
-                <p className="text-xs text-stone-400 mt-1">Start by chatting with the agents</p>
-              </div>
+                <h3 className="font-medium text-[--paper-900] mb-2">No course yet</h3>
+                <p className="text-sm text-[--paper-500] max-w-xs mx-auto">
+                  Start chatting with the agents to create your course structure
+                </p>
+              </motion.div>
             ) : (
-              <div className="space-y-3">
-                {/* Course title */}
-                <div className="mb-6">
-                  <h3 className="font-serif font-medium text-stone-900">{course.title}</h3>
+              <div className="space-y-4">
+                {/* Course header */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6"
+                >
+                  <h3 className="font-serif text-lg font-medium text-[--paper-900] mb-1">
+                    {course.title}
+                  </h3>
                   {course.description && (
-                    <p className="text-sm text-stone-500 mt-1 line-clamp-2">{course.description}</p>
+                    <p className="text-sm text-[--paper-500] line-clamp-2">{course.description}</p>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Modules */}
-                {course.modules.map((module, index) => (
-                  <ModuleCard
-                    key={module.id}
-                    module={module}
-                    index={index}
-                    isExpanded={expandedModules.has(module.id)}
-                    onToggle={() => toggleModule(module.id)}
-                  />
-                ))}
+                <div className="space-y-3">
+                  {course.modules.map((module, index) => (
+                    <ModuleCard
+                      key={module.id}
+                      module={module}
+                      index={index}
+                      isExpanded={expandedModules.has(module.id)}
+                      onToggle={() => toggleModule(module.id)}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </ScrollArea>
       </aside>
-    </div>
-  );
-}
-
-// Message component
-function Message({ message }: { message: AgentMessage }) {
-  const isUser = message.role === 'user';
-
-  if (isUser) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-end"
-      >
-        <div className="message-user max-w-[80%]">
-          <p className="text-sm">{message.content}</p>
-        </div>
-      </motion.div>
-    );
-  }
-
-  const agent = message.agentRole ? AGENTS[message.agentRole] : AGENTS.director;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex gap-4"
-    >
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-        style={{ backgroundColor: `${agent.color}15` }}
-      >
-        <span className="text-xs font-medium" style={{ color: agent.color }}>
-          {agent.name.charAt(0)}
-        </span>
-      </div>
-      <div className="flex-1">
-        <div className="message-assistant">
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{message.content}</p>
-        </div>
-        <p className="text-xs text-stone-400 mt-1.5">{agent.name}</p>
-      </div>
-    </motion.div>
-  );
-}
-
-// Module card component
-function ModuleCard({
-  module,
-  index,
-  isExpanded,
-  onToggle,
-}: {
-  module: Module;
-  index: number;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const hasContent = module.lessons.some((l) => l.content);
-
-  return (
-    <div className="module-card">
-      <button
-        onClick={onToggle}
-        className="w-full module-card-header flex items-start gap-3 text-left hover:bg-stone-50 transition-colors"
-      >
-        <span className="w-6 h-6 rounded bg-stone-100 flex items-center justify-center text-xs font-medium text-stone-600 flex-shrink-0">
-          {index + 1}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-sm text-stone-900 truncate">{module.title}</p>
-            {hasContent && <Check className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />}
-          </div>
-          <p className="text-xs text-stone-500 mt-0.5">
-            {module.lessons.length} lesson{module.lessons.length !== 1 ? 's' : ''}
-            {module.quiz && ' · Quiz'}
-          </p>
-        </div>
-        {isExpanded ? (
-          <ChevronDown className="h-4 w-4 text-stone-400 flex-shrink-0" />
-        ) : (
-          <ChevronRight className="h-4 w-4 text-stone-400 flex-shrink-0" />
-        )}
-      </button>
-
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="module-card-content space-y-1">
-              {module.lessons.map((lesson) => (
-                <div key={lesson.id} className="lesson-item">
-                  {lesson.content ? (
-                    <Check className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />
-                  ) : (
-                    <Circle className="h-3.5 w-3.5 text-stone-300 flex-shrink-0" />
-                  )}
-                  <span className="text-sm text-stone-600 truncate">{lesson.title}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
