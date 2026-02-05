@@ -427,15 +427,16 @@ export function Landing({ onUploadClick, onDemoClick }: LandingProps) {
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1 }}
-            className="mt-20 grid grid-cols-3 gap-8 max-w-xl"
+            className="mt-20 grid grid-cols-4 gap-6 max-w-2xl"
           >
             {[
               { value: 6, label: 'AI Agents', suffix: '' },
-              { value: 20, label: 'Tools', suffix: '+' },
-              { value: 3, label: 'Gemini Models', suffix: '' },
+              { value: 30, label: 'Tools', suffix: '+' },
+              { value: 10, label: 'Achievements', suffix: '+' },
+              { value: 4, label: 'Export Formats', suffix: '' },
             ].map((stat, i) => (
               <div key={stat.label} className="text-center">
-                <div className="font-serif text-4xl md:text-5xl font-semibold text-[--paper-900]">
+                <div className="font-serif text-3xl md:text-4xl font-semibold text-[--paper-900]">
                   <AnimatedCounter value={stat.value} />
                   <span>{stat.suffix}</span>
                 </div>
@@ -520,6 +521,107 @@ export function Landing({ onUploadClick, onDemoClick }: LandingProps) {
                 index={index}
                 total={3}
               />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section */}
+      <section className="py-24 bg-white border-y border-[--paper-200]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <span className="badge-forge badge-forge-primary mb-4 inline-flex">
+              Premium Features
+            </span>
+            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-[--paper-900] mb-4">
+              Enterprise-Grade Capabilities
+            </h2>
+            <p className="text-lg text-[--paper-500] max-w-2xl mx-auto">
+              Packed with advanced features that set CourseForge apart
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: 'AI Quality Analyzer',
+                description: 'Real-time course quality scoring with Bloom\'s Taxonomy analysis',
+                color: '#8B5CF6',
+                badge: 'Smart'
+              },
+              {
+                title: 'Knowledge Graph',
+                description: 'Interactive visualization of course concepts and connections',
+                color: '#0066FF',
+                badge: 'Visual'
+              },
+              {
+                title: 'Gamification',
+                description: 'XP, achievements, and streaks to track your progress',
+                color: '#F59E0B',
+                badge: 'Fun'
+              },
+              {
+                title: 'SCORM Export',
+                description: 'LMS-ready packages compatible with any learning system',
+                color: '#00A67E',
+                badge: 'LMS'
+              },
+              {
+                title: 'Command Palette',
+                description: 'Power-user keyboard shortcuts for maximum efficiency',
+                color: '#EC4899',
+                badge: 'Pro'
+              },
+              {
+                title: 'Analytics Dashboard',
+                description: 'Deep insights into course structure and content quality',
+                color: '#E24A12',
+                badge: 'Insights'
+              },
+              {
+                title: 'Multi-Format Export',
+                description: 'JSON, Markdown, SCORM 1.2 & 2004 export options',
+                color: '#06B6D4',
+                badge: 'Flexible'
+              },
+              {
+                title: 'Voice Input',
+                description: 'Speak your commands and let AI transcribe them',
+                color: '#A855F7',
+                badge: 'Voice'
+              },
+            ].map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                className="card-forge p-5 group hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${feature.color}15` }}
+                  >
+                    <Sparkles className="w-5 h-5" style={{ color: feature.color }} />
+                  </div>
+                  <span
+                    className="text-[10px] font-medium px-2 py-0.5 rounded-full text-white"
+                    style={{ backgroundColor: feature.color }}
+                  >
+                    {feature.badge}
+                  </span>
+                </div>
+                <h3 className="font-medium text-[--paper-900] mb-1">{feature.title}</h3>
+                <p className="text-sm text-[--paper-500]">{feature.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>

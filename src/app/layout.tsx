@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "CourseForge - AI Course Studio",
-  description: "Transform any document into a complete, production-ready course with AI agents",
-  keywords: ["course creator", "AI", "education", "Gemini", "learning"],
+  title: "CourseForge - AI-Powered Course Studio",
+  description: "Transform any document into a complete, production-ready course with 6 specialized AI agents. Features gamification, SCORM export, knowledge graphs, and analytics.",
+  keywords: ["course creator", "AI", "education", "Gemini", "learning", "e-learning", "LMS", "SCORM"],
+  openGraph: {
+    title: "CourseForge - AI Course Studio",
+    description: "Transform documents into courses with 6 AI agents",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
-      >
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

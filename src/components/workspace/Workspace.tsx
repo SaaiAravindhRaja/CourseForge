@@ -24,11 +24,18 @@ import {
   GraduationCap,
   FileJson,
   FileCode,
+  Command,
+  Keyboard,
+  Wand2,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCourseStore } from '@/store/courseStore';
+import { RightPanel } from '@/components/panels/RightPanel';
+import { CommandPalette } from '@/components/command/CommandPalette';
+import { EnhancedExportModal } from '@/components/export/EnhancedExportModal';
 import type { AgentMessage, Module, Lesson } from '@/types';
 import Image from 'next/image';
 
@@ -362,9 +369,54 @@ export function Workspace({ onReset }: WorkspaceProps) {
   const [activeAgent, setActiveAgent] = useState<AgentId | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Keyboard shortcut for command palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleCommand = (command: string) => {
+    switch (command) {
+      case 'focus-chat':
+        textareaRef.current?.focus();
+        break;
+      case 'export-json':
+      case 'export-markdown':
+      case 'export-scorm':
+        setShowExportModal(true);
+        break;
+      case 'reset':
+        onReset();
+        break;
+      case 'generate-outline':
+        setInput('Generate a complete course outline based on my document');
+        handleSubmit();
+        break;
+      case 'generate-content':
+        setInput('Generate content for all lessons');
+        handleSubmit();
+        break;
+      case 'generate-quiz':
+        setInput('Generate quizzes for all modules');
+        handleSubmit();
+        break;
+      default:
+        break;
+    }
+    setShowCommandPalette(false);
+  };
 
   const {
     messages,
@@ -657,23 +709,30 @@ export function Workspace({ onReset }: WorkspaceProps) {
 
         {/* Actions */}
         <div className="p-4 border-t border-[--paper-200] space-y-2">
+          {/* Command Palette Trigger */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowCommandPalette(true)}
+            className="w-full justify-between border-[--paper-200] text-[--paper-700] hover:bg-[--paper-50] hover:border-[--paper-300]"
+          >
+            <span className="flex items-center">
+              <Command className="h-4 w-4 mr-2 text-[--paper-500]" />
+              Commands
+            </span>
+            <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-[--paper-100] text-[--paper-500]">Ctrl+K</kbd>
+          </Button>
+
           {course && (
-            <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowExportMenu(!showExportMenu)}
-                className="w-full justify-start border-[--paper-200] text-[--paper-700] hover:bg-[--paper-50] hover:border-[--paper-300]"
-              >
-                <Download className="h-4 w-4 mr-2 text-[--paper-500]" />
-                Export Course
-              </Button>
-              <ExportMenu
-                isOpen={showExportMenu}
-                onClose={() => setShowExportMenu(false)}
-                onExport={handleExport}
-              />
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportModal(true)}
+              className="w-full justify-start border-[--paper-200] text-[--paper-700] hover:bg-[--paper-50] hover:border-[--paper-300]"
+            >
+              <Download className="h-4 w-4 mr-2 text-[--paper-500]" />
+              Export Course
+            </Button>
           )}
           <Button
             variant="ghost"
@@ -764,9 +823,37 @@ export function Workspace({ onReset }: WorkspaceProps) {
           </ScrollArea>
         </div>
 
-        {/* Input area */}
+        {/* Input area with quick actions */}
         <div className="border-t border-[--paper-200] bg-white p-4">
           <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+            {/* Quick action buttons */}
+            {!isLoading && sourceDocument && !course && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-wrap gap-2 mb-3"
+              >
+                {[
+                  { label: 'Generate Outline', prompt: 'Generate a comprehensive course outline from my document', icon: Brain },
+                  { label: 'Quick Course', prompt: 'Create a complete course with modules, lessons, and quizzes', icon: Zap },
+                  { label: 'Beginner Friendly', prompt: 'Create a beginner-friendly course with simple explanations', icon: Sparkles },
+                ].map((action) => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={() => {
+                      setInput(action.prompt);
+                      setTimeout(() => handleSubmit(), 100);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[--paper-50] hover:bg-[--paper-100] text-[--paper-700] rounded-lg border border-[--paper-200] transition-colors"
+                  >
+                    <action.icon className="w-3.5 h-3.5 text-[--ember-500]" />
+                    {action.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+
             <div className="flex gap-3">
               <div className="flex-1 relative">
                 <Textarea
@@ -776,11 +863,19 @@ export function Workspace({ onReset }: WorkspaceProps) {
                   onKeyDown={handleKeyDown}
                   placeholder="Ask me to create, modify, or refine your course..."
                   disabled={isLoading || !sourceDocument}
-                  className="input-forge min-h-[56px] max-h-32 resize-none pr-12"
+                  className="input-forge min-h-[56px] max-h-32 resize-none pr-24"
                   rows={1}
                 />
-                <div className="absolute right-3 bottom-3 text-xs text-[--paper-400]">
-                  ⏎ to send
+                <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCommandPalette(true)}
+                    className="p-1.5 text-[--paper-400] hover:text-[--paper-600] hover:bg-[--paper-100] rounded transition-colors"
+                    title="Command Palette (Ctrl+K)"
+                  >
+                    <Command className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs text-[--paper-400]">⏎</span>
                 </div>
               </div>
               <Button
@@ -799,69 +894,24 @@ export function Workspace({ onReset }: WorkspaceProps) {
         </div>
       </main>
 
-      {/* Right Panel - Course Outline */}
-      <aside className="w-80 flex-shrink-0 border-l border-[--paper-200] bg-white flex flex-col">
-        <div className="h-14 border-b border-[--paper-200] px-4 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <BookOpen className="w-4 h-4 text-[--paper-500] flex-shrink-0" />
-            <h2 className="font-medium text-[--paper-900] text-sm">Outline</h2>
-          </div>
-          {course && course.modules.length > 0 && (
-            <span className="flex-shrink-0 text-[10px] py-0.5 px-2 rounded-full bg-[--paper-100] text-[--paper-600]">
-              {course.modules.length} modules
-            </span>
-          )}
-        </div>
+      {/* Right Panel - Enhanced with Analytics, Gamification, Graph */}
+      <RightPanel course={course} qualityScore={progress} />
 
-        <ScrollArea className="flex-1">
-          <div className="p-4">
-            {!course || course.modules.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-12"
-              >
-                <div className="w-14 h-14 rounded-xl bg-[--paper-100] mx-auto mb-4 flex items-center justify-center">
-                  <BookOpen className="h-7 w-7 text-[--paper-400]" />
-                </div>
-                <h3 className="font-medium text-[--paper-900] mb-1 text-sm">No course yet</h3>
-                <p className="text-xs text-[--paper-500]">
-                  Chat with agents to create your course
-                </p>
-              </motion.div>
-            ) : (
-              <div className="space-y-3">
-                {/* Course header */}
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 pb-3 border-b border-[--paper-100]"
-                >
-                  <h3 className="font-serif text-base font-medium text-[--paper-900] mb-1 leading-tight">
-                    {course.title}
-                  </h3>
-                  {course.description && (
-                    <p className="text-xs text-[--paper-500] line-clamp-2 leading-relaxed">{course.description}</p>
-                  )}
-                </motion.div>
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onCommand={handleCommand}
+      />
 
-                {/* Modules */}
-                <div className="space-y-3">
-                  {course.modules.map((module, index) => (
-                    <ModuleCard
-                      key={module.id}
-                      module={module}
-                      index={index}
-                      isExpanded={expandedModules.has(module.id)}
-                      onToggle={() => toggleModule(module.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </aside>
+      {/* Enhanced Export Modal */}
+      {course && (
+        <EnhancedExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          course={course}
+        />
+      )}
     </div>
   );
 }
